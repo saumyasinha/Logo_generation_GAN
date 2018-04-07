@@ -1,3 +1,7 @@
 
 LLD-icon/*
 *.npy
+5klogos/*
+.DS_Store
+.idea/*
+MNIST_data/*
