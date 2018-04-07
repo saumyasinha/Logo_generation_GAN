@@ -1,1 +1,1 @@
-# GAN_HCML
+# Logo generation using GANs
