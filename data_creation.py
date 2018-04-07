@@ -43,7 +43,7 @@ def load_icon_data(data_path, pattern='LLD*.pkl', single_file=None):
 #             pickle.dump(icons[p*package_size:(p+1)*package_size], f, protocol=pickle.HIGHEST_PROTOCOL)
 #
 
-dataset=load_icon_data('C:\\Users\\Shivendra\\Desktop\\GAN\\LLD-icon')
+dataset=load_icon_data('/Users/shivendra/Desktop/CU/HCML/Logo_generation_GAN/LLD-icon')
 print(dataset.shape)
 print(type(dataset))
 np.save('icon_dataset.npy',dataset)
