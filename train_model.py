@@ -9,18 +9,23 @@ from keras.optimizers import Adam
 from sklearn.model_selection import train_test_split
 import matplotlib.pyplot as plt
 
+def preprocess(x):
+    return (x/255)*2-1
+
+def deprocess(x):
+    return np.uint8((x+1)/2*255)
 
 class DCGAN:
     '''
     CNN classifier
     '''
-    def __init__(self, X_train_real, X_test_real, epochs = 1, batch_size = 2):
+    def __init__(self, X_train_real, X_test_real):
 
         '''
         Initialize CNN classifier data
         '''
-        self.batch_size = batch_size
-        self.epochs = epochs
+        # self.batch_size = batch_size
+        # self.epochs = epochs
         self.X_train_real=X_train_real
         self.X_test_real = X_test_real
 
@@ -60,6 +65,7 @@ class DCGAN:
 
     # beta_1 is the exponential decay rate for the 1st moment estimates in Adam optimizer
     def make_DCGAN(self, sample_size, g_learning_rate, g_beta_1, d_learning_rate, d_beta_1,leaky_alpha):
+        print('dong')
         # clear any session data
         K.clear_session()
 
@@ -85,24 +91,26 @@ class DCGAN:
             layer.trainable = trainable
 
     def make_labels(self,size):
+        print("ding")
         return np.ones([size, 1]), np.zeros([size, 1])
 
-    # def show_losses(losses):
-    #     losses = np.array(losses)
-    #
-    #     fig, ax = plt.subplots()
-    #     plt.plot(losses.T[0], label='Discriminator')
-    #     plt.plot(losses.T[1], label='Generator')
-    #     plt.title("Validation Losses")
-    #     plt.legend()
-    #     plt.show()
-    #
+    def show_losses(self,losses):
+        losses = np.array(losses)
+
+        fig, ax = plt.subplots()
+        plt.plot(losses.T[0], label='Discriminator')
+        plt.plot(losses.T[1], label='Generator')
+        plt.title("Validation Losses")
+        plt.legend()
+        plt.savefig('loss.png')
+
     def show_images(self,generated_images):
         n_images = len(generated_images)
+        print(n_images)
         cols = 10
         rows = n_images // cols
 
-        plt.figure(figsize=(10, 8))
+        plt.figure()
         for i in range(n_images):
             img = deprocess(generated_images[i])
             ax = plt.subplot(rows, cols, i + 1)
@@ -110,7 +118,9 @@ class DCGAN:
             plt.xticks([])
             plt.yticks([])
         plt.tight_layout()
-        plt.show()
+        # plt.show()
+        plt.savefig('generated_images.png')
+        plt.close('all')
 
     def train(self,
             g_learning_rate,  # learning rate for the generator
@@ -120,11 +130,11 @@ class DCGAN:
             leaky_alpha,
             smooth=0.1,
             sample_size=100,  # latent sample size (i.e. 100 random numbers)
-            epochs=25,
-            batch_size=128,  # train batch size
-            eval_size=16,  # evaluate size
+            epochs=20,
+            batch_size=16,  # train batch size
+            eval_size=10,  # evaluate size
             show_details=True):
-
+        print("reached here")
         # labels for the batch size and the test size
         y_train_real, y_train_fake = self.make_labels(batch_size)
         y_eval_real, y_eval_fake = self.make_labels(eval_size)
@@ -137,11 +147,12 @@ class DCGAN:
             d_learning_rate,
             d_beta_1,
             leaky_alpha)
-
+        print(epochs)
         losses = []
         for e in range(epochs):
             for i in range(len(X_train_real) // batch_size):
                 # real SVHN digit images
+                # print(i)
                 X_batch_real = X_train_real[i * batch_size:(i + 1) * batch_size]
 
                 # latent samples and the generated digit images
@@ -155,6 +166,7 @@ class DCGAN:
 
                 # train the generator via GAN
                 self.make_trainable(discriminator, False)
+                #discriminator.compile(optimizer=Adam(lr=d_learning_rate, beta_1=d_beta_1), loss='binary_crossentropy')
                 gan.train_on_batch(latent_samples, y_train_real)
 
             # evaluate
@@ -177,7 +189,7 @@ class DCGAN:
                 self.show_images(X_eval_fake[:10])
 
         if show_details:
-            # self.show_losses(losses)
+            self.show_losses(losses)
             self.show_images(generator.predict(self.make_latent_samples(80, sample_size)))
         return generator
 
@@ -185,11 +197,12 @@ class DCGAN:
 
 
 if __name__ == '__main__':
-    X = np.load('icon_dataset.npy')
+    X = np.load('C:\\Users\\Shivendra\\Desktop\\GAN\\icon_dataset.npy')
+    X=X[:20000]
     split = int(0.8 * len(X))
     X_train, X_test = X[:split, ], X[split:, ]
-    X_train_real = X_train
-    X_test_real = X_test
+    X_train_real = preprocess(X_train)
+    X_test_real = preprocess(X_test)
 
     print(X_train_real.shape)
     print(X_test_real.shape)
