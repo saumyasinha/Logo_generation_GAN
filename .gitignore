@@ -5,3 +5,9 @@ LLD-icon/*
 .DS_Store
 .idea/*
 MNIST_data/*
+generated_images_vanilla_DCGAN.png
+images/*
+images_ACGAN/*
+images_ACGAN_RC_clusters/*
+loss_vanilla_DCGAN.png
+

@@ -59,15 +59,16 @@ def classify(rgb):
     # add as many colors as appropriate here, but for
     # the stated use case you just want to see if your
     # pixel is 'more red' or 'more green'
-    colors = {'red': rgb2lab((255,0,0)),
-          'green': rgb2lab((0,255,0)),
-          'blue': rgb2lab((0,0,255)),
-          'yellow': rgb2lab((255,255,0)),
-          'orange': rgb2lab((255,127,0)),
-          'white': rgb2lab((255,255,255)),
-          'black': rgb2lab((0,0,0)),
-          'pink': rgb2lab((255,127,127)),
-          'purple': rgb2lab((127,0,255))}
+    colors = {0: rgb2lab((255,0,0)),
+          1: rgb2lab((0,255,0)),
+          2: rgb2lab((0,0,255)),
+          3: rgb2lab((255,255,0)),
+          4: rgb2lab((255,127,0)),
+          5: rgb2lab((255,255,255)),
+          6: rgb2lab((0,0,0)),
+          7: rgb2lab((255,127,127)),
+          8: rgb2lab((127,0,255)),
+          9: rgb2lab((127, 127, 127)) }
 
     manhattan = lambda x,y : abs(x[0] - y[0]) + abs(x[1] - y[1]) + abs(x[2] - y[2])
     distances = {k: manhattan(v, rgb_tuple) for k, v in colors.items()}
@@ -77,8 +78,8 @@ def classify(rgb):
 
 if __name__ == "__main__":
     print(classify(rgb2lab((244, 241, 65))))
-    X = np.load('/Users/shivendra/Desktop/CU/HCML/Logo_generation_GAN/icon_dataset.npy')
-    X = X[:10]
+    X = np.load('C:\\Users\Shivendra\Desktop\GAN\icon_dataset.npy')
+    # X = X[:10]
     average_color = np.average(X, axis=(1,2))
     color_labels = []
     for rgb in average_color:
@@ -87,3 +88,15 @@ if __name__ == "__main__":
     color_labels = np.array(color_labels)
     print(color_labels.shape)
     np.save('icon_color_label.npy', color_labels)
+
+
+    colors = {'red': rgb2lab((255,0,0)),
+          'green': rgb2lab((0,255,0)),
+          'blue': rgb2lab((0,0,255)),
+          'yellow': rgb2lab((255,255,0)),
+          'orange': rgb2lab((255,127,0)),
+          'white': rgb2lab((255,255,255)),
+          'black': rgb2lab((0,0,0)),
+          'pink': rgb2lab((255,127,127)),
+          'purple': rgb2lab((127,0,255)),
+           'gray': rgb2lab((127,127,127))}
