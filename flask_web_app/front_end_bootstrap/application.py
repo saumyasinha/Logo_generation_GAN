@@ -55,6 +55,14 @@ def show_index():
     show_images(generator.predict(make_latent_samples(25, 100)))
     return "Success"
 
+@app.route('/color', methods=['POST'])
+def show_color():
+    color = request.form['color']
+    print(color)
+    generator_color = give_me_color()
+    save_imgs(generator_color, color)
+    return "Success"
+
 
 if __name__ == '__main__':
    app.run()
