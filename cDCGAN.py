@@ -7,18 +7,20 @@ from keras.layers.advanced_activations import LeakyReLU
 from keras.layers.convolutional import UpSampling2D, Conv2D
 from keras.models import Sequential, Model
 from keras.optimizers import Adam
+from keras.layers.convolutional import UpSampling2D, Conv2D, Conv2DTranspose
 
 import matplotlib.pyplot as plt
 
 import numpy as np
 
-class CGAN():
+N_CLASSES=32
+class cDCGAN():
     def __init__(self):
         self.img_rows = 32
         self.img_cols = 32
         self.channels = 3
         self.img_shape = (self.img_rows, self.img_cols, self.channels)
-        self.num_classes = 10
+        self.num_classes = N_CLASSES
         self.latent_dim = 100
 
         optimizer = Adam(0.0002, 0.5)
@@ -26,13 +28,13 @@ class CGAN():
         # Build and compile the discriminator
         self.discriminator = self.build_discriminator()
         self.discriminator.compile(loss=['binary_crossentropy'],
-            optimizer=optimizer,
-            metrics=['accuracy'])
+                                   optimizer=optimizer,
+                                   metrics=['accuracy'])
 
         # Build and compile the generator
         self.generator = self.build_generator()
         self.generator.compile(loss=['binary_crossentropy'],
-            optimizer=optimizer)
+                               optimizer=optimizer)
 
         # The generator takes noise and the target label as input
         # and generates the corresponding digit of that label
@@ -52,23 +54,24 @@ class CGAN():
         # noise as input => generates images => determines validity
         self.combined = Model([noise, label], valid)
         self.combined.compile(loss=['binary_crossentropy'],
-            optimizer=optimizer)
+                              optimizer=optimizer)
 
     def build_generator(self):
 
         model = Sequential()
 
-        model.add(Dense(256, input_dim=self.latent_dim))
-        model.add(LeakyReLU(alpha=0.2))
+        model.add(Dense(4 * 4 * 512, input_dim=self.latent_dim))
+        model.add(Reshape((4, 4, 512)))
         model.add(BatchNormalization(momentum=0.8))
-        model.add(Dense(512))
         model.add(LeakyReLU(alpha=0.2))
+        model.add(Conv2DTranspose(256, kernel_size=5, strides=2, padding='same'))
         model.add(BatchNormalization(momentum=0.8))
-        model.add(Dense(1024))
         model.add(LeakyReLU(alpha=0.2))
+        model.add(Conv2DTranspose(128, kernel_size=5, strides=2, padding='same'))
         model.add(BatchNormalization(momentum=0.8))
-        model.add(Dense(np.prod(self.img_shape), activation='tanh'))
-        model.add(Reshape(self.img_shape))
+        model.add(LeakyReLU(alpha=0.2))
+        model.add(Conv2DTranspose(self.channels, kernel_size=5, strides=2, padding='same'))
+        model.add(Activation("tanh"))
 
         model.summary()
 
@@ -85,14 +88,26 @@ class CGAN():
 
         model = Sequential()
 
-        model.add(Dense(512, input_dim=np.prod(self.img_shape)))
+        # model.add(Dense(512, input_dim=np.prod(self.img_shape)))
+
+        model.add(Conv2D(16, kernel_size=3, strides=2, input_shape=self.img_shape, padding="same"))
         model.add(LeakyReLU(alpha=0.2))
-        model.add(Dense(512))
+        model.add(Dropout(0.25))
+        model.add(Conv2D(32, kernel_size=3, strides=2, padding="same"))
+        model.add(ZeroPadding2D(padding=((0, 1), (0, 1))))
         model.add(LeakyReLU(alpha=0.2))
-        model.add(Dropout(0.4))
-        model.add(Dense(512))
+        model.add(Dropout(0.25))
+        model.add(BatchNormalization(momentum=0.8))
+        model.add(Conv2D(64, kernel_size=3, strides=2, padding="same"))
         model.add(LeakyReLU(alpha=0.2))
-        model.add(Dropout(0.4))
+        model.add(Dropout(0.25))
+        model.add(BatchNormalization(momentum=0.8))
+        model.add(Conv2D(128, kernel_size=3, strides=2, padding="same"))
+        model.add(LeakyReLU(alpha=0.2))
+        model.add(Conv2D(256, kernel_size=3, strides=1, padding="same"))
+        model.add(LeakyReLU(alpha=0.2))
+        model.add(Dropout(0.25))
+        model.add(Flatten())
         model.add(Dense(1, activation='sigmoid'))
         model.summary()
 
@@ -100,21 +115,34 @@ class CGAN():
         label = Input(shape=(1,), dtype='int32')
 
         label_embedding = Flatten()(Embedding(self.num_classes, np.prod(self.img_shape))(label))
-        print(label_embedding.shape)
+        # print(label_embedding.shape)
         flat_img = Flatten()(img)
 
         model_input = multiply([flat_img, label_embedding])
-        print(model_input.shape)
+        model_input=Reshape(self.img_shape)(model_input)
+        # print(model_input.shape)
+
         validity = model(model_input)
-        print(validity.shape)
-        print([img, label][:3])
+        # print(validity.shape)
+        # print([img, label][:3])
         return Model([img, label], validity)
 
     def train(self, epochs, batch_size=16, save_interval=5):
 
         # Load the dataset
-        X_train=np.load('C:\\Users\Shivendra\Desktop\GAN\icon_dataset.npy')
-        y_train=np.load('C:\\Users\Shivendra\Desktop\GAN\icon_color_label.npy')
+        # X_train = np.load('C:\\Users\Shivendra\Desktop\GAN\icon_dataset.npy')
+        # y_train = np.load('C:\\Users\Shivendra\Desktop\GAN\icon_color_label.npy')
+        # print(X_train.shape)
+        X_train = np.load('C:\\Users\Shivendra\Desktop\GAN\icon_dataset_from_hd5.npy')
+        y_train = np.load('C:\\Users\Shivendra\Desktop\GAN\\rc_cluster_icon_dataset_from_hd5.npy')
+        print(X_train.shape)
+        print(y_train.shape)
+        print(y_train[0])
+
+        ## changing dim from (3,32,32) to (32,32,3)
+        X_train = np.rollaxis(X_train, 3, 1)
+        X_train = np.rollaxis(X_train, 3, 2)
+        X_train = X_train[:y_train.shape[0]]
         print(X_train.shape)
         # Rescale -1 to 1
         X_train = (X_train.astype(np.float32) - 127.5) / 127.5
@@ -155,50 +183,72 @@ class CGAN():
             valid = np.ones((batch_size, 1))
             # Generator wants discriminator to label the generated images as the intended
             # digits
-            sampled_labels = np.random.randint(0, 10, batch_size).reshape(-1, 1)
+            sampled_labels = np.random.randint(0, N_CLASSES, batch_size).reshape(-1, 1)
 
             # Train the generator
             g_loss = self.combined.train_on_batch([noise, sampled_labels], valid)
 
             # Plot the progress
-            print ("%d [D loss: %f, acc.: %.2f%%] [G loss: %f]" % (epoch, d_loss[0], 100*d_loss[1], g_loss))
+            print("%d [D loss: %f, acc.: %.2f%%] [G loss: %f]" % (epoch, d_loss[0], 100 * d_loss[1], g_loss))
 
             # If at save interval => save generated image samples
             if epoch % save_interval == 0:
                 self.save_imgs(epoch)
 
-    def save_imgs(self, epoch):
+    def save_imgs_COLOUR(self, epoch):
         r, c = 2, 5
         noise = np.random.normal(0, 1, (r * c, 100))
-        sampled_labels = np.arange(0, 10).reshape(-1, 1)
+        sampled_labels = np.arange(0, N_CLASSES).reshape(-1, 1)
         colour_map = {0: 'red',
-                     1: 'green',
-                     2: 'blue',
-                     3: 'yellow',
-                     4: 'orange',
-                     5: 'white',
-                     6: 'black',
-                     7: 'pink',
-                     8: 'purple',
-                     9: 'gray'}
+                      1: 'green',
+                      2: 'blue',
+                      3: 'yellow',
+                      4: 'orange',
+                      5: 'white',
+                      6: 'black',
+                      7: 'pink',
+                      8: 'purple',
+                      9: 'gray'}
         gen_imgs = self.generator.predict([noise, sampled_labels])
 
         # Rescale images 0 - 1
         gen_imgs = 0.5 * gen_imgs + 0.5
 
         fig, axs = plt.subplots(r, c)
-        fig.suptitle("CGAN: Generated colours", fontsize=12)
+        fig.suptitle("DCGAN: Generated colours", fontsize=12)
         cnt = 0
         for i in range(r):
             for j in range(c):
-                axs[i,j].imshow(gen_imgs[cnt,:,:,:],cmap='jet')
-                axs[i,j].set_title("%s " % colour_map[int(sampled_labels[cnt])])
-                axs[i,j].axis('off')
+                axs[i, j].imshow(gen_imgs[cnt, :, :, :], cmap='jet')
+                axs[i, j].set_title("%s " % colour_map[int(sampled_labels[cnt])])
+                axs[i, j].axis('off')
                 cnt += 1
-        fig.savefig("C:\\Users\Shivendra\Desktop\GAN\GAN_HCML\images\%d.png" % epoch)
+        fig.savefig("C:\\Users\Shivendra\Desktop\GAN\GAN_HCML\images_cDCGAN\%d.png" % epoch)
+        plt.close()
+
+    def save_imgs(self, epoch):
+        r, c = 8, 4
+        noise = np.random.normal(0, 1, (r * c, 100))
+        sampled_labels = np.arange(0, N_CLASSES).reshape(-1, 1)
+
+        gen_imgs = self.generator.predict([noise, sampled_labels])
+
+        # Rescale images 0 - 1
+        gen_imgs = 0.5 * gen_imgs + 0.5
+
+        fig, axs = plt.subplots(r, c)
+        fig.suptitle("CDCGAN: Generated clusters", fontsize=12)
+        cnt = 0
+        for i in range(r):
+            for j in range(c):
+                axs[i, j].imshow(gen_imgs[cnt, :, :, :], cmap='jet')
+                axs[i, j].set_title("Cluster:%s " % cnt)
+                axs[i, j].axis('off')
+                cnt += 1
+        fig.savefig("C:\\Users\Shivendra\Desktop\GAN\GAN_HCML\images_CDCGAN_RC_clusters\%d.png" % epoch)
         plt.close()
 
 
 if __name__ == '__main__':
-    cgan = CGAN()
-    cgan.train(epochs=100, batch_size=8, save_interval=10)
+    cdcgan = cDCGAN()
+    cdcgan.train(epochs=50000, batch_size=16, save_interval=10000)

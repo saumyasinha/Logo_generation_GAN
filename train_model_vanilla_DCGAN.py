@@ -122,6 +122,20 @@ class DCGAN:
         plt.savefig('generated_images.png')
         plt.close('all')
 
+
+    def save_model(self,generator):
+        def save(model, model_name):
+            model_path = "C:\\Users\Shivendra\Desktop\GAN\GAN_HCML\saved_model\%s.json" % model_name
+            weights_path = "C:\\Users\Shivendra\Desktop\GAN\GAN_HCML\saved_model\%s_weights.hdf5" % model_name
+            options = {"file_arch": model_path,
+                       "file_weight": weights_path}
+            json_string = model.to_json()
+            open(options['file_arch'], 'w').write(json_string)
+            model.save_weights(options['file_weight'])
+
+        save(generator, "vanilla_dcgan_generator")
+
+
     def train(self,
             g_learning_rate,  # learning rate for the generator
             g_beta_1,  # the exponential decay rate for the 1st moment estimates in Adam optimizer
@@ -189,6 +203,7 @@ class DCGAN:
                 self.show_images(X_eval_fake[:10])
 
         if show_details:
+            self.save_model(generator)
             self.show_losses(losses)
             self.show_images(generator.predict(self.make_latent_samples(80, sample_size)))
         return generator
