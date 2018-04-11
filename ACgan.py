@@ -190,6 +190,7 @@ class ACGAN():
             if epoch % save_interval == 0:
                 # self.save_model()
                 self.save_imgs(epoch)
+        self.save_model()
 
     def save_imgs(self, epoch):
         r, c = 2, 5
@@ -222,7 +223,18 @@ class ACGAN():
         fig.savefig("C:\\Users\Shivendra\Desktop\GAN\GAN_HCML\images_ACGAN\%d.png" % epoch)
         plt.close()
 
+    def save_model(self):
 
+        def save(model, model_name):
+            model_path = "C:\\Users\Shivendra\Desktop\GAN\GAN_HCML\saved_model\%s.json" % model_name
+            weights_path = "C:\\Users\Shivendra\Desktop\GAN\GAN_HCML\saved_model\%s_weights.hdf5" % model_name
+            options = {"file_arch": model_path,
+                       "file_weight": weights_path}
+            json_string = model.to_json()
+            open(options['file_arch'], 'w').write(json_string)
+            model.save_weights(options['file_weight'])
+
+        save(self.generator, "acgan_generator")
 
 if __name__ == '__main__':
     acgan = ACGAN()
