@@ -12,5 +12,5 @@ images_ACGAN_RC_clusters/*
 loss_vanilla_DCGAN.png 
 images_CDCGAN_RC_clusters/*
 images_cDCGAN/*
-saved_model/*
+
 
