@@ -234,3 +234,4 @@ ul.alert-dropdown {
 .yellow-background {background-color: #ebd829;}
 
 .white {color:#ffffff;}
+button:focus {outline:0;}
