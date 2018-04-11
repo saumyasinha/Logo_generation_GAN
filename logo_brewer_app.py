@@ -32,17 +32,18 @@ def show_images(generated_images):
 def gimme_something():
     g_learning_rate = 0.0001
     g_beta_1 = 0.5
-    json_file = open('C:\\Users\Shivendra\Desktop\GAN\GAN_HCML\saved_model\\vanilla_dcgan_generator.json', 'r')
+    json_file = open('/Users/shivendra/Desktop/CU/HCML/Logo_generation_GAN/saved_model/vanilla_dcgan_generator.json', 'r')
     loaded_model_json = json_file.read()
     json_file.close()
     loaded_model = model_from_json(loaded_model_json)
     # load weights into new model
-    loaded_model.load_weights("C:\\Users\Shivendra\Desktop\GAN\GAN_HCML\saved_model\\vanilla_dcgan_generator_weights.hdf5")
+    loaded_model.load_weights("/Users/shivendra/Desktop/CU/HCML/Logo_generation_GAN/saved_model/vanilla_dcgan_generator_weights.hdf5")
     print("Loaded model from disk")
 
     # evaluate loaded model on test data
     loaded_model.compile(optimizer=Adam(lr=g_learning_rate, beta_1=g_beta_1), loss='binary_crossentropy')
     return loaded_model
 
-generator=gimme_something()
-show_images(generator.predict(make_latent_samples(25, 100)))
+if __name__ == "__main__":
+    generator=gimme_something()
+    show_images(generator.predict(make_latent_samples(25, 100)))
