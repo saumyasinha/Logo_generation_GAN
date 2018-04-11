@@ -13,3 +13,4 @@ loss_vanilla_DCGAN.png
 images_CDCGAN_RC_clusters/*
 images_cDCGAN/*
 .idea/
+flask_web_app/.idea/*
