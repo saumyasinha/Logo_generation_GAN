@@ -81,12 +81,12 @@ def gimme_something():
 
 def give_me_color():
     optimizer = Adam(0.0002, 0.5)
-    json_file = open('C:\\Users\Shivendra\Desktop\GAN\GAN_HCML\saved_model\\acgan_generator.json', 'r')
+    json_file = open('/Users/shivendra/Desktop/CU/HCML/Logo_generation_GAN/saved_model/acgan_generator.json', 'r')
     loaded_model_json = json_file.read()
     json_file.close()
     loaded_model = model_from_json(loaded_model_json)
     # load weights into new model
-    loaded_model.load_weights("C:\\Users\Shivendra\Desktop\GAN\GAN_HCML\saved_model\\acgan_generator_weights.hdf5")
+    loaded_model.load_weights("/Users/shivendra/Desktop/CU/HCML/Logo_generation_GAN/saved_model/acgan_generator_weights.hdf5")
     print("Loaded model from disk")
 
     # evaluate loaded model on test data
