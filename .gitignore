@@ -15,4 +15,5 @@ images_cDCGAN/*
 .idea/
 images_wgan/*
 flask_web_app/.idea/*
+saved_model_for_app/*
 
