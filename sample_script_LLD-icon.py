@@ -3,11 +3,11 @@ import numpy as np
 
 # simple way to load the complete dataset (for a more sophisticated generator example, see LLD-logo script)
 # open hdf5 file
-hdf5_file = h5py.File('C:\\Users\Shivendra\Desktop\GAN\LLD-icon.hdf5', 'r')
+hdf5_file = h5py.File('C:\\Users\Shivendra\Desktop\GAN\LLD-icon-sharp.hdf5', 'r')
 # load data into memory as numpy array
-images, labels = (hdf5_file['data'][:], hdf5_file['labels/resnet/rc_32'][:])
-np.save('icon_dataset_from_hd5.npy',images)
-np.save('rc_cluster_icon_dataset_from_hd5.npy',labels)
+images, labels = (hdf5_file['data'][:], hdf5_file['labels/resnet/rc_16'][:])
+np.save('icon_sharp_dataset_from_hd5.npy',images)
+np.save('rc_cluster_icon_sharp_dataset_from_hd5.npy',labels)
 
 # alternatively, h5py objects can be used like numpy arrays without loading the whole dataset into memory:
 # images, labels = (hdf5_file['data'], hdf5_file['labels/resnet/rc_64'])
